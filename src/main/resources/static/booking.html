@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Book Your Ride</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<header>
+    <h1>Book Your Ride</h1>
+</header>
+
+<div class="container">
+    <form id="bookingForm">
+        <label for="userName">Name:</label><br>
+        <input type="text" id="userName" name="userName" required><br><br>
+
+        <label for="pickup">Pickup Location:</label><br>
+        <input type="text" id="pickup" name="pickup" required><br><br>
+
+        <label for="destination">Destination:</label><br>
+        <input type="text" id="destination" name="destination" required><br><br>
+
+        <label for="travelDate">Date:</label><br>
+        <input type="date" id="travelDate" name="travelDate" required><br><br>
+
+        <button type="submit">Submit Booking</button>
+    </form>
+
+    <p id="responseMessage" style="margin-top:20px; color:green;"></p>
+</div>
+
+<script>
+document.getElementById("bookingForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const booking = {
+        userName: document.getElementById("userName").value,
+        pickup: document.getElementById("pickup").value,
+        destination: document.getElementById("destination").value,
+        travelDate: document.getElementById("travelDate").value
+    };
+
+    const response = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(booking)
+    });
+
+    const result = await response.text();
+    document.getElementById("responseMessage").textContent = result;
+});
+</script>
+</body>
+</html>

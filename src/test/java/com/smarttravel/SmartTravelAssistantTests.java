@@ -1,13 +1,11 @@
-package com.baddie.travel_assistant;
+package com.smarttravel;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class TravelAssistantApplicationTests {
-
-	@Test
-	void contextLoads() {
-	}
-
+class SmartTravelAssistantApplicationTests {
+    @Test
+    void contextLoads() {
+    }
 }

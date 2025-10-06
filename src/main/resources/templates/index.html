@@ -1,10 +1,87 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Travel Assistant</title>
+    <title>Smart Travel Assistant</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 10px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to Travel Assistant 🚀</h1>
-    <p><a href="/map">Open Map</a></p>
+<header>
+    <h1>🗺️ Smart Travel Assistant</h1>
+</header>
+
+<div class="container">
+    <h2>Add Travel Route</h2>
+    <form th:action="@{/addRoute}" method="post">
+        <label>Start Location:</label>
+        <input type="text" name="startLocation" required>
+
+        <label>Destination:</label>
+        <input type="text" name="destination" required>
+
+        <label>Distance (km):</label>
+        <input type="number" name="distance" step="0.1" required>
+
+        <label>Transport Mode:</label>
+        <select name="transportMode">
+            <option value="Train">Train</option>
+            <option value="Auto">Auto</option>
+            <option value="Taxi">Taxi</option>
+        </select>
+
+        <button type="submit">Add Route</button>
+    </form>
+
+    <h2>Saved Routes</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Start</th>
+                <th>Destination</th>
+                <th>Distance (km)</th>
+                <th>Mode</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="route : ${routes}">
+                <td th:text="${route.id}"></td>
+                <td th:text="${route.startLocation}"></td>
+                <td th:text="${route.destination}"></td>
+                <td th:text="${route.distance}"></td>
+                <td th:text="${route.transportMode}"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Map View</h2>
+    <div id="map"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"/>
+
+<script>
+    // Initialize OpenStreetMap
+    var map = L.map('map').setView([9.4981, 76.3388], 10); // Default: Alappuzha
+
+    // Tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Example marker
+    L.marker([9.4981, 76.3388]).addTo(map)
+        .bindPopup("Welcome to Smart Travel Assistant!")
+        .openPopup();
+</script>
 </body>
 </html>
