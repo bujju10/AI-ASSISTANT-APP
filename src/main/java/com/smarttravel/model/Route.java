@@ -11,9 +11,11 @@ public class Route {
     @Column(name = "route_id")
     private Long routeid;
 
+    @Column(name = "start_location")
     private String startLocation;
     private String destination;
     private double distance;
+    @Column(name = "transport_mode")
     private String transportMode;
 
     public Route() {}

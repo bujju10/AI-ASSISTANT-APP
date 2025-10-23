@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div class="container">
+    <h2>Register</h2>
+    <form id="registerForm">
+        <label>Name:</label><br>
+        <input type="text" id="name" required><br>
+        <label>Email:</label><br>
+        <input type="email" id="email" required><br>
+        <label>Password:</label><br>
+        <input type="password" id="password" required><br><br>
+        <button type="submit">Register</button>
+    </form>
+    <p id="registerMsg"></p>
+    <p>Already have an account? <a href="/login.html">Login here</a></p>
+</div>
+<script src="/js/ui.js"></script>
+<script>
+document.getElementById("registerForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const user = {
+        name: document.getElementById("name").value,
+        email: document.getElementById("email").value,
+        password: document.getElementById("password").value
+    };
+    const res = await fetch("/api/users/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(user)
+    });
+    const data = await res.json().catch(() => null);
+    if (res.ok && data && data.id) {
+        localStorage.setItem('userId', data.id);
+        uiToast('Registered successfully','success');
+        setTimeout(() => window.location = "/routes.html", 900);
+    } else {
+        const msg = await res.text();
+        uiToast(msg,'error');
+        document.getElementById("registerMsg").textContent = msg;
+    }
+});
+</script>
+</body>
+</html>

@@ -20,34 +20,90 @@
         <label for="end">End Location:</label><br>
         <input type="text" id="end" name="end" required><br><br>
 
-        <button type="submit">Show Route</button>
+        <button type="submit">Show Route & Get LLM Suggestion</button>
     </form>
 
+    <div id="llmSuggestion" style="margin: 20px 0; color: #2d89ef; font-weight: bold;"></div>
     <div id="map" style="height: 400px; margin-top:20px; border-radius: 10px;"></div>
+
+    <div id="chatBox" style="margin-top:40px;">
+        <h3>Chat with Travel LLM</h3>
+        <div id="chatHistory" style="background:#f1f1f1; padding:10px; height:120px; overflow-y:auto; border-radius:5px; margin-bottom:10px;"></div>
+        <input type="text" id="chatInput" placeholder="Ask the LLM anything..." style="width:70%;padding:6px;">
+        <button id="sendChat">Send</button>
+    </div>
 </div>
 
+<script src="/js/ui.js"></script>
+<script src="/js/llm_chat.js"></script>
 <script>
 const map = L.map('map').setView([9.9312, 76.2673], 13);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors'
 }).addTo(map);
 
+let currentRouteLine = null;
+
 document.getElementById("routeForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-
     const start = document.getElementById("start").value;
     const end = document.getElementById("end").value;
 
-    // Example API call to your backend
-    const response = await fetch(`/api/routes/find?start=${start}&end=${end}`);
-    const data = await response.json();
+    const apiKey = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImI5ODk3MWY1YjQ1NDQyYWRhNDA3ZDBiZTAyZmI4ODM3IiwiaCI6Im11cm11cjY0In0=";
 
-    if (data.coordinates) {
-        const routeLine = L.polyline(data.coordinates, { color: 'blue' }).addTo(map);
-        map.fitBounds(routeLine.getBounds());
-    } else {
-        alert("No route found or error fetching route!");
+    // Helper to geocode a place name to [lon, lat]
+    async function geocode(place) {
+        const resp = await fetch(`https://api.openrouteservice.org/geocode/search?api_key=${apiKey}&text=${encodeURIComponent(place)}`);
+        const data = await resp.json();
+        if (data.features && data.features.length > 0) {
+            return data.features[0].geometry.coordinates; // [lon, lat]
+        }
+        throw new Error('No geocode result');
     }
+
+    let startCoord, endCoord, routeData, coordinates;
+    try {
+        startCoord = await geocode(start);
+        endCoord = await geocode(end);
+    } catch (err) {
+        document.getElementById("llmSuggestion").textContent = "Error geocoding locations.";
+        return;
+    }
+
+    try {
+        const resp = await fetch(`https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${startCoord[0]},${startCoord[1]}&end=${endCoord[0]},${endCoord[1]}`);
+        routeData = await resp.json();
+        coordinates = routeData.features[0].geometry.coordinates.map(c => [c[1], c[0]]);
+    } catch (err) {
+        document.getElementById("llmSuggestion").textContent = "Error fetching route from HeiGIT API.";
+        return;
+    }
+
+    // Draw route on map
+    if (currentRouteLine) map.removeLayer(currentRouteLine);
+    currentRouteLine = L.polyline(coordinates, { color: 'blue' }).addTo(map);
+    map.fitBounds(currentRouteLine.getBounds());
+
+    // Call LLM for suggestion
+    const prompt = `Suggest the best route and mode of transportation from ${start} to ${end}. Here are the route coordinates: ${JSON.stringify(coordinates)}`;
+    document.getElementById("llmSuggestion").textContent = "Getting LLM suggestion...";
+    const suggestion = await getLLMSuggestion(prompt);
+    document.getElementById("llmSuggestion").textContent = suggestion;
+});
+
+// Chat interface logic
+const chatHistory = document.getElementById("chatHistory");
+const chatInput = document.getElementById("chatInput");
+const sendChat = document.getElementById("sendChat");
+
+sendChat.addEventListener("click", async () => {
+    const userMsg = chatInput.value.trim();
+    if (!userMsg) return;
+    chatHistory.innerHTML += `<div><b>You:</b> ${userMsg}</div>`;
+    chatInput.value = "";
+    const llmReply = await chatWithLLM(userMsg);
+    chatHistory.innerHTML += `<div><b>LLM:</b> ${llmReply}</div>`;
+    chatHistory.scrollTop = chatHistory.scrollHeight;
 });
 </script>
 </body>

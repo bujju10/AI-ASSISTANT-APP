@@ -1,35 +1,42 @@
-body {
-    font-family: "Poppins", sans-serif;
-    background-color: #f8f9fa;
-    margin: 0;
-    padding: 0;
+:root{
+  --bg:#0b0f17; --panel:#071025; --accent:#00e6d8; --muted:#9aa7b2;
 }
+*{box-sizing:border-box}
+body{font-family:Inter,system-ui,Arial; margin:0; background:linear-gradient(180deg,#031021 0%,#041428 60%); color:#cfeef3}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 28px;background:linear-gradient(90deg,rgba(0,0,0,0.2),rgba(255,255,255,0.02));backdrop-filter:blur(6px)}
+.topbar .brand{font-weight:700;color:var(--accent);letter-spacing:1px}
+.topbar .actions button{margin-left:8px;background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--accent);padding:8px 12px;border-radius:8px;cursor:pointer}
+.grid{display:grid;grid-template-columns:320px 1fr 360px;gap:18px;padding:28px}
+.panel{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+.panel h3{margin-top:0;color:#e6fbf8}
+.inputs{display:flex;flex-direction:column;gap:8px}
+.inputs input,.inputs select{padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--accent)}
+.inputs button{margin-top:8px;padding:10px;border-radius:8px;background:linear-gradient(90deg,var(--accent),#6fffe4);border:none;color:#001820;font-weight:700}
+.suggestion{margin-top:10px;color:var(--muted)}
+.map{height:560px}
+.chatHistory{height:420px;overflow:auto;background:linear-gradient(180deg,#021828,#041a26);padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.02)}
+.chat input{width:calc(100% - 90px);padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--accent)}
+.chat button{padding:10px 14px;margin-left:8px;border-radius:8px;border:none;background:var(--accent);color:#001820}
+.footer{padding:18px;text-align:center;color:var(--muted)}
 
-header {
-    background-color: #2d89ef;
-    color: white;
-    text-align: center;
-    padding: 1rem;
-}
+/* responsive */
+@media (max-width:1000px){.grid{grid-template-columns:1fr;padding:18px}.map{height:360px}}
 
-.container {
-    width: 80%;
-    margin: auto;
-    padding: 2rem;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
+/* cards, forms and table styles for other pages */
+.card{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 6px 18px rgba(0,0,0,0.45)}
+.form-row{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+label{color:var(--muted);font-size:0.95rem}
+input[type=text],input[type=email],input[type=password],input[type=number],input[type=date],select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--accent)}
+button.primary{background:linear-gradient(90deg,var(--accent),#6fffe4);border:none;color:#001820;padding:10px 14px;border-radius:8px;font-weight:700;cursor:pointer}
+.btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--accent);padding:8px 10px;border-radius:8px}
 
-button {
-    background-color: #2d89ef;
-    color: white;
-    border: none;
-    padding: 0.7rem 1.2rem;
-    border-radius: 5px;
-    cursor: pointer;
-}
+.table{width:100%;border-collapse:collapse;color:#dff6f3}
+.table th,.table td{padding:10px;border-bottom:1px solid rgba(255,255,255,0.03);text-align:left}
 
-button:hover {
-    background-color: #1e5faf;
-}
+/* toast notifications */
+.toast-wrap{position:fixed;right:20px;top:20px;z-index:99999;display:flex;flex-direction:column;gap:10px}
+.toast{min-width:220px;padding:12px 16px;border-radius:10px;color:#012;box-shadow:0 8px 24px rgba(2,6,23,0.6);font-weight:600}
+.toast.success{background:linear-gradient(90deg,#b8fff1,#00e6d8)}
+.toast.error{background:linear-gradient(90deg,#ffd1d1,#ff8b8b)}
+.toast.info{background:linear-gradient(90deg,#cfeeff,#9fe9ff)}
+.toast .close{float:right;cursor:pointer;color:rgba(0,0,0,0.6);font-weight:700}

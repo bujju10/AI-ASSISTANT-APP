@@ -6,11 +6,15 @@ import jakarta.persistence.*;
 @Table(name = "users")
 public class User {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private Long id;
 
     private String name;
     @Column(unique = true)
     private String email;
+    private String phone;
+    @Column(name = "wallet_balance")
+    private java.math.BigDecimal walletBalance;
     private String password;
 
     public User() {}

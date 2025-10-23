@@ -6,14 +6,22 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "bookings")
 public class Booking {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "booking_id")
     private Long id;
 
+    @Column(name = "user_id")
     private Long userId;               // store user id (simple)
+    @Column(name = "passenger_name")
     private String passengerName;
+    @Column(name = "transport_type")
     private String transportType;      // Cab/Auto/Train/Flight
+    @Column(name = "from_location")
     private String fromLocation;
+    @Column(name = "to_location")
     private String toLocation;
+    @Column(name = "date_time")
     private LocalDateTime dateTime;
 
     public Booking() {}
