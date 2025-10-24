@@ -2,28 +2,91 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Smart Travel Assistant</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Travel Assistant - AI-Powered Journey Planning</title>
     <link rel="stylesheet" href="/css/styles.css">
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 </head>
 <body>
-<header>
-    <h1>🌍 Smart Travel Assistant</h1>
-</header>
+    <header>
+        <h1>🚀 Smart Travel Assistant</h1>
+        <p class="text-center text-secondary">AI-Powered Journey Planning & Optimization</p>
+    </header>
 
-<div class="container">
-    <h2>Plan Your Smart Journey</h2>
-    <p>Book routes, find optimized paths, and explore your travel plan with OpenStreetMap integration.</p>
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="card mb-xl">
+            <div class="text-center">
+                <h2 style="font-size: 2.5rem; margin-bottom: var(--space-md); background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                    Plan Your Smart Journey
+                </h2>
+                <p style="font-size: 1.2rem; color: var(--text-secondary); margin-bottom: var(--space-xl);">
+                    Experience the future of travel with AI-powered route optimization, real-time mapping, and intelligent suggestions.
+                </p>
+            </div>
 
-    <div id="map" style="height: 400px; border-radius: 10px;"></div>
+            <!-- Interactive Map -->
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
 
-    <div style="margin-top: 20px;">
-        <a href="/booking.html"><button>Book a Ride</button></a>
-        <a href="/routes.html"><button>View Routes</button></a>
+            <!-- Action Buttons -->
+            <div class="nav">
+                <a href="/booking.html">
+                    <button class="primary">
+                        <span>📱</span>
+                        Book a Ride
+                    </button>
+                </a>
+                <a href="/routes.html">
+                    <button class="secondary">
+                        <span>🗺️</span>
+                        Explore Routes
+                    </button>
+                </a>
+                <a href="/wallet.html">
+                    <button class="accent">
+                        <span>💳</span>
+                        Wallet
+                    </button>
+                </a>
+                <a href="/login.html">
+                    <button class="ghost">
+                        <span>👤</span>
+                        Sign In
+                    </button>
+                </a>
+            </div>
+        </div>
+
+        <!-- Features Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-xl); margin-top: var(--space-2xl);">
+            <div class="card">
+                <h3 style="color: var(--accent-primary); margin-bottom: var(--space-md);">🤖 AI-Powered Planning</h3>
+                <p style="color: var(--text-secondary);">Get intelligent route suggestions and travel recommendations powered by advanced AI algorithms.</p>
+            </div>
+            
+            <div class="card">
+                <h3 style="color: var(--accent-primary); margin-bottom: var(--space-md);">📍 Real-Time Mapping</h3>
+                <p style="color: var(--text-secondary);">Interactive maps with live traffic data and optimized route calculations for the best travel experience.</p>
+            </div>
+            
+            <div class="card">
+                <h3 style="color: var(--accent-primary); margin-bottom: var(--space-md);">⚡ Smart Booking</h3>
+                <p style="color: var(--text-secondary);">Seamless booking system with instant confirmations and real-time updates on your travel plans.</p>
+            </div>
+        </div>
     </div>
-</div>
 
-<script src="/js/map.js"></script>
+    <!-- Footer -->
+    <footer style="margin-top: var(--space-2xl); padding: var(--space-xl); text-align: center; color: var(--text-muted); border-top: 1px solid var(--border-color);">
+        <p>&copy; 2024 Smart Travel Assistant. Powered by AI Technology.</p>
+    </footer>
+
+    <script src="/js/map.js"></script>
+    <script src="/js/ui.js"></script>
 </body>
 </html>

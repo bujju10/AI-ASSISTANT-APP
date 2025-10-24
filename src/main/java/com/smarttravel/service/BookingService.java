@@ -20,4 +20,12 @@ public class BookingService {
     public List<Booking> getAllBookings() {
         return repo.findAll();
     }
+
+    public List<Booking> getBookingsByUserId(Long userId) {
+        return repo.findByUserId(userId);
+    }
+
+    public Booking getBookingById(Long bookingId) {
+        return repo.findById(bookingId).orElse(null);
+    }
 }

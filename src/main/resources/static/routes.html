@@ -2,109 +2,481 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>View Routes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explore Routes - Smart Travel Assistant</title>
     <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 </head>
 <body>
-<header>
-    <h1>Explore Routes</h1>
-</header>
+    <header>
+        <h1>🗺️ Explore Routes</h1>
+        <p class="text-center text-secondary">AI-Powered Route Planning & Optimization</p>
+    </header>
 
-<div class="container">
-    <form id="routeForm">
-        <label for="start">Start Location:</label><br>
-        <input type="text" id="start" name="start" required><br><br>
+    <div class="container">
+        <div class="card">
+            <h2 style="color: var(--accent-primary); margin-bottom: var(--space-xl); text-align: center;">
+                Plan Your Journey
+            </h2>
+            
+            <form id="routeForm">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-xl);">
+                    <div class="form-row">
+                        <label for="start">🚀 Start Location</label>
+                        <input type="text" id="start" name="start" placeholder="Enter starting point" required>
+                    </div>
 
-        <label for="end">End Location:</label><br>
-        <input type="text" id="end" name="end" required><br><br>
+                    <div class="form-row">
+                        <label for="end">🎯 Destination</label>
+                        <input type="text" id="end" name="end" placeholder="Enter destination" required>
+                    </div>
+                </div>
 
-        <button type="submit">Show Route & Get LLM Suggestion</button>
-    </form>
+                <div style="text-align: center;">
+                    <button type="submit" class="primary" style="padding: var(--space-lg) var(--space-2xl); font-size: 1.1rem;">
+                        <span>🔍</span>
+                        Analyze Route & Get AI Suggestions
+                    </button>
+                </div>
+            </form>
 
-    <div id="llmSuggestion" style="margin: 20px 0; color: #2d89ef; font-weight: bold;"></div>
-    <div id="map" style="height: 400px; margin-top:20px; border-radius: 10px;"></div>
+            <div id="llmSuggestion" style="margin: var(--space-xl) 0; padding: var(--space-lg); background: var(--glass-bg); border-radius: var(--radius-md); border: 1px solid var(--border-color); min-height: 60px; display: flex; align-items: center; justify-content: center;">
+                <span style="color: var(--text-muted);">Enter your start and destination to get AI-powered route suggestions</span>
+            </div>
 
-    <div id="chatBox" style="margin-top:40px;">
-        <h3>Chat with Travel LLM</h3>
-        <div id="chatHistory" style="background:#f1f1f1; padding:10px; height:120px; overflow-y:auto; border-radius:5px; margin-bottom:10px;"></div>
-        <input type="text" id="chatInput" placeholder="Ask the LLM anything..." style="width:70%;padding:6px;">
-        <button id="sendChat">Send</button>
+            <!-- Search History Section -->
+            <div class="search-history-section" style="margin-top: var(--space-xl);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-lg);">
+                    <h3 style="color: var(--accent-primary); margin: 0;">
+                        <i class="fas fa-history"></i> Search History
+                    </h3>
+                    <button id="refreshHistory" class="btn btn-secondary" style="padding: var(--space-sm) var(--space-md);">
+                        <i class="fas fa-sync"></i> Refresh
+                    </button>
+                </div>
+                
+                <div id="searchHistoryContainer" style="max-height: 300px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--glass-bg);">
+                    <div id="searchHistoryList">
+                        <!-- Search history will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
+        </div>
+
+        <!-- AI Chat Interface -->
+        <div class="chat-container">
+            <h3 style="color: var(--accent-primary); margin-bottom: var(--space-lg); text-align: center;">
+                🤖 Chat with Travel AI Assistant
+            </h3>
+            
+            <div id="chatHistory" class="chat-history">
+                <div class="chat-message" style="background: var(--gradient-secondary); border-left-color: var(--accent-primary);">
+                    <strong>AI Assistant:</strong> Hello! I'm your AI travel assistant. Ask me anything about routes, travel tips, or get personalized recommendations for your journey.
+                </div>
+            </div>
+            
+            <div class="chat-input-container">
+                <input type="text" id="chatInput" class="chat-input" placeholder="Ask me about your travel plans..." />
+                <button id="sendChat" class="primary">
+                    <span>📤</span>
+                    Send
+                </button>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav" style="margin-top: var(--space-xl);">
+            <a href="/index.html">
+                <button class="ghost">
+                    <span>🏠</span>
+                    Home
+                </button>
+            </a>
+            <a href="/booking.html">
+                <button class="secondary">
+                    <span>📱</span>
+                    Book a Ride
+                </button>
+            </a>
+        </div>
     </div>
-</div>
 
-<script src="/js/ui.js"></script>
-<script src="/js/llm_chat.js"></script>
-<script>
-const map = L.map('map').setView([9.9312, 76.2673], 13);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
-}).addTo(map);
+    <script src="/js/ui.js"></script>
+    <script src="/js/llm_chat.js"></script>
+    <script>
+        // Initialize map
+        const map = L.map('map').setView([9.9312, 76.2673], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
 
-let currentRouteLine = null;
+        let currentRouteLine = null;
 
-document.getElementById("routeForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const start = document.getElementById("start").value;
-    const end = document.getElementById("end").value;
+        // Route form submission
+        document.getElementById("routeForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span class="loading"></span> Analyzing...';
+            submitBtn.disabled = true;
 
-    const apiKey = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImI5ODk3MWY1YjQ1NDQyYWRhNDA3ZDBiZTAyZmI4ODM3IiwiaCI6Im11cm11cjY0In0=";
+            const start = document.getElementById("start").value;
+            const end = document.getElementById("end").value;
 
-    // Helper to geocode a place name to [lon, lat]
-    async function geocode(place) {
-        const resp = await fetch(`https://api.openrouteservice.org/geocode/search?api_key=${apiKey}&text=${encodeURIComponent(place)}`);
-        const data = await resp.json();
-        if (data.features && data.features.length > 0) {
-            return data.features[0].geometry.coordinates; // [lon, lat]
+            const apiKey = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImI5ODk3MWY1YjQ1NDQyYWRhNDA3ZDBiZTAyZmI4ODM3IiwiaCI6Im11cm11cjY0In0=";
+
+            // Helper to geocode a place name to [lon, lat]
+            async function geocode(place) {
+                const resp = await fetch(`https://api.openrouteservice.org/geocode/search?api_key=${apiKey}&text=${encodeURIComponent(place)}`);
+                const data = await resp.json();
+                if (data.features && data.features.length > 0) {
+                    return data.features[0].geometry.coordinates; // [lon, lat]
+                }
+                throw new Error('No geocode result');
+            }
+
+            let startCoord, endCoord, routeData, coordinates;
+            try {
+                startCoord = await geocode(start);
+                endCoord = await geocode(end);
+            } catch (err) {
+                document.getElementById("llmSuggestion").innerHTML = 
+                    '<div style="color: var(--error); text-align: center;">❌ Error geocoding locations. Please check your input.</div>';
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                return;
+            }
+
+            try {
+                const resp = await fetch(`https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${startCoord[0]},${startCoord[1]}&end=${endCoord[0]},${endCoord[1]}`);
+                routeData = await resp.json();
+                coordinates = routeData.features[0].geometry.coordinates.map(c => [c[1], c[0]]);
+            } catch (err) {
+                document.getElementById("llmSuggestion").innerHTML = 
+                    '<div style="color: var(--error); text-align: center;">❌ Error fetching route from API.</div>';
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                return;
+            }
+
+            // Draw route on map
+            if (currentRouteLine) map.removeLayer(currentRouteLine);
+            currentRouteLine = L.polyline(coordinates, { 
+                color: '#00e6d8', 
+                weight: 4, 
+                opacity: 0.8 
+            }).addTo(map);
+            map.fitBounds(currentRouteLine.getBounds());
+
+            // Add markers
+            L.marker([startCoord[1], startCoord[0]]).addTo(map)
+                .bindPopup(`<strong>Start:</strong> ${start}`)
+                .openPopup();
+            L.marker([endCoord[1], endCoord[0]]).addTo(map)
+                .bindPopup(`<strong>Destination:</strong> ${end}`);
+
+            // Auto-save route to database
+            try {
+                await saveRouteToHistory(start, end, 'cab'); // Default transport type
+            } catch (error) {
+                console.warn('Failed to save route to history:', error);
+            }
+
+            // Call enhanced LLM with real distance/time calculations and internet data
+            document.getElementById("llmSuggestion").innerHTML = 
+                '<div style="color: var(--accent-primary); text-align: center;"><span class="loading"></span> Analyzing route with real-time data, distance calculations, and internet intelligence...</div>';
+            
+            try {
+                const analysis = await getSmartRouteAnalysis(start, end);
+                displaySmartAnalysis(analysis);
+            } catch (error) {
+                document.getElementById("llmSuggestion").innerHTML = 
+                    '<div style="color: var(--error); text-align: center; padding: var(--space-lg); background: var(--glass-bg); border-radius: var(--radius-md); border: 1px solid var(--error);">❌ Error getting smart analysis: ' + error.message + '</div>';
+            }
+
+            // Refresh search history
+            loadSearchHistory();
+
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        });
+
+        // Chat interface logic
+        const chatHistory = document.getElementById("chatHistory");
+        const chatInput = document.getElementById("chatInput");
+        const sendChat = document.getElementById("sendChat");
+
+        function addMessageToChat(message, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${isUser ? 'user' : ''}`;
+            messageDiv.innerHTML = `<strong>${isUser ? 'You' : 'AI Assistant'}:</strong> ${message}`;
+            chatHistory.appendChild(messageDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
         }
-        throw new Error('No geocode result');
-    }
 
-    let startCoord, endCoord, routeData, coordinates;
-    try {
-        startCoord = await geocode(start);
-        endCoord = await geocode(end);
-    } catch (err) {
-        document.getElementById("llmSuggestion").textContent = "Error geocoding locations.";
-        return;
-    }
+        sendChat.addEventListener("click", async () => {
+            const userMsg = chatInput.value.trim();
+            if (!userMsg) return;
+            
+            addMessageToChat(userMsg, true);
+            chatInput.value = "";
+            
+            sendChat.innerHTML = '<span class="loading"></span> Thinking...';
+            sendChat.disabled = true;
+            
+            try {
+                // Get current route context if available
+                const startLocation = document.getElementById("start").value;
+                const endLocation = document.getElementById("end").value;
+                
+                let llmReply;
+                if (startLocation && endLocation) {
+                    // Use smart chat with real-time data
+                    llmReply = await getSmartChat(userMsg, startLocation, endLocation);
+                } else {
+                    // Use regular chat
+                    llmReply = await chatWithLLM(userMsg);
+                }
+                addMessageToChat(llmReply);
+            } catch (error) {
+                addMessageToChat('Sorry, I encountered an error. Please try again.', false);
+            }
+            
+            sendChat.innerHTML = '<span>📤</span> Send';
+            sendChat.disabled = false;
+        });
 
-    try {
-        const resp = await fetch(`https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${startCoord[0]},${startCoord[1]}&end=${endCoord[0]},${endCoord[1]}`);
-        routeData = await resp.json();
-        coordinates = routeData.features[0].geometry.coordinates.map(c => [c[1], c[0]]);
-    } catch (err) {
-        document.getElementById("llmSuggestion").textContent = "Error fetching route from HeiGIT API.";
-        return;
-    }
+        chatInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+                sendChat.click();
+            }
+        });
 
-    // Draw route on map
-    if (currentRouteLine) map.removeLayer(currentRouteLine);
-    currentRouteLine = L.polyline(coordinates, { color: 'blue' }).addTo(map);
-    map.fitBounds(currentRouteLine.getBounds());
+        // Function to display smart analysis with real data
+        function displaySmartAnalysis(analysis) {
+            const container = document.getElementById("llmSuggestion");
+            
+            if (analysis.error) {
+                container.innerHTML = 
+                    '<div style="color: var(--error); text-align: center; padding: var(--space-lg); background: var(--glass-bg); border-radius: var(--radius-md); border: 1px solid var(--error);">❌ ' + analysis.error + '</div>';
+                return;
+            }
 
-    // Call LLM for suggestion
-    const prompt = `Suggest the best route and mode of transportation from ${start} to ${end}. Here are the route coordinates: ${JSON.stringify(coordinates)}`;
-    document.getElementById("llmSuggestion").textContent = "Getting LLM suggestion...";
-    const suggestion = await getLLMSuggestion(prompt);
-    document.getElementById("llmSuggestion").textContent = suggestion;
-});
+            let html = '<div style="color: var(--text-primary); line-height: 1.6; padding: var(--space-lg); background: var(--glass-bg); border-radius: var(--radius-md); border: 1px solid var(--border-color);">';
+            
+            // Real Data Section
+            if (analysis.real_data) {
+                const realData = analysis.real_data;
+                html += '<div style="margin-bottom: var(--space-lg);">';
+                html += '<h3 style="color: var(--accent-primary); margin-bottom: var(--space-md);">📊 Real-Time Data Analysis</h3>';
+                
+                if (realData.route_data && !realData.route_data.error) {
+                    const route = realData.route_data;
+                    html += '<div style="background: var(--card-bg); padding: var(--space-md); border-radius: var(--radius-sm); margin-bottom: var(--space-md);">';
+                    html += '<strong>📍 Route Information:</strong><br>';
+                    html += `Distance: ${route.distance_km} km (${route.distance_miles} miles)<br>`;
+                    html += `Driving Time: ${route.duration_minutes} minutes (${route.duration_hours} hours)<br>`;
+                    html += '</div>';
+                }
+                
+                if (realData.traffic_data && !realData.traffic_data.error) {
+                    const traffic = realData.traffic_data;
+                    html += '<div style="background: var(--card-bg); padding: var(--space-md); border-radius: var(--radius-sm); margin-bottom: var(--space-md);">';
+                    html += '<strong>🚦 Traffic Conditions:</strong><br>';
+                    html += `Current: ${traffic.current_time} (${traffic.day_of_week})<br>`;
+                    html += `Level: ${traffic.traffic_level} - ${traffic.traffic_description}<br>`;
+                    html += `Delays: ${traffic.expected_delays}<br>`;
+                    html += '</div>';
+                }
+                
+                if (realData.weather_data && !realData.weather_data.error) {
+                    const weather = realData.weather_data;
+                    html += '<div style="background: var(--card-bg); padding: var(--space-md); border-radius: var(--radius-sm); margin-bottom: var(--space-md);">';
+                    html += '<strong>🌤️ Weather Conditions:</strong><br>';
+                    html += `Season: ${weather.season} (${weather.time_of_day})<br>`;
+                    html += `Considerations: ${weather.weather_considerations}<br>`;
+                    html += `Temperature: ${weather.temperature_impact}<br>`;
+                    html += `Precipitation: ${weather.precipitation_risk}<br>`;
+                    html += '</div>';
+                }
+                
+                if (realData.transport_options && !realData.transport_options.error) {
+                    const transport = realData.transport_options;
+                    html += '<div style="background: var(--card-bg); padding: var(--space-md); border-radius: var(--radius-sm); margin-bottom: var(--space-md);">';
+                    html += '<strong>🚗 Transportation Options:</strong><br>';
+                    
+                    if (transport.driving) {
+                        const driving = transport.driving;
+                        html += `🚗 Driving: ${driving.distance_km} km, ${driving.duration_minutes} min, $${driving.fuel_cost_estimate} fuel<br>`;
+                    }
+                    
+                    if (transport.public_transport) {
+                        const pt = transport.public_transport;
+                        html += `🚌 Public Transport: ${pt.distance_km} km, ${pt.estimated_duration_minutes} min<br>`;
+                    }
+                    
+                    if (transport.walking) {
+                        const walking = transport.walking;
+                        html += `🚶 Walking: ${walking.distance_km} km, ${walking.duration_minutes} min (Feasible: ${walking.feasible})<br>`;
+                    }
+                    
+                    if (transport.cycling) {
+                        const cycling = transport.cycling;
+                        html += `🚴 Cycling: ${cycling.distance_km} km, ${cycling.duration_minutes} min (Feasible: ${cycling.feasible})<br>`;
+                    }
+                    
+                    html += `<br><strong>💡 Recommended:</strong> ${transport.recommended}`;
+                    html += '</div>';
+                }
+                
+                html += '</div>';
+            }
+            
+            // AI Analysis Section
+            if (analysis.ai_analysis && analysis.ai_analysis.content) {
+                html += '<div style="border-top: 1px solid var(--border-color); padding-top: var(--space-lg);">';
+                html += '<h3 style="color: var(--accent-primary); margin-bottom: var(--space-md);">🤖 AI Intelligence Analysis</h3>';
+                html += '<div style="white-space: pre-wrap; background: var(--card-bg); padding: var(--space-md); border-radius: var(--radius-sm);">';
+                html += analysis.ai_analysis.content;
+                html += '</div>';
+                html += '</div>';
+            }
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
 
-// Chat interface logic
-const chatHistory = document.getElementById("chatHistory");
-const chatInput = document.getElementById("chatInput");
-const sendChat = document.getElementById("sendChat");
+        // Search History Functions
+        async function saveRouteToHistory(source, destination, transportType) {
+            try {
+                const response = await fetch('/api/routes/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        source: source,
+                        destination: destination,
+                        transportType: transportType
+                    })
+                });
 
-sendChat.addEventListener("click", async () => {
-    const userMsg = chatInput.value.trim();
-    if (!userMsg) return;
-    chatHistory.innerHTML += `<div><b>You:</b> ${userMsg}</div>`;
-    chatInput.value = "";
-    const llmReply = await chatWithLLM(userMsg);
-    chatHistory.innerHTML += `<div><b>LLM:</b> ${llmReply}</div>`;
-    chatHistory.scrollTop = chatHistory.scrollHeight;
-});
-</script>
+                const result = await response.json();
+                if (response.ok) {
+                    console.log('Route saved to history:', result);
+                } else {
+                    console.error('Failed to save route:', result.error);
+                }
+            } catch (error) {
+                console.error('Error saving route to history:', error);
+            }
+        }
+
+        async function loadSearchHistory() {
+            try {
+                const response = await fetch('/api/routes/history');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displaySearchHistory(data.routes);
+                } else {
+                    console.error('Failed to load search history:', data.error);
+                }
+            } catch (error) {
+                console.error('Error loading search history:', error);
+            }
+        }
+
+        function displaySearchHistory(routes) {
+            const container = document.getElementById('searchHistoryList');
+            
+            if (!routes || routes.length === 0) {
+                container.innerHTML = '<div style="padding: var(--space-lg); text-align: center; color: var(--text-muted);">No search history found</div>';
+                return;
+            }
+
+            let html = '';
+            routes.forEach(route => {
+                html += `
+                    <div class="history-item" style="padding: var(--space-md); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; color: var(--accent-primary); margin-bottom: var(--space-xs);">
+                                ${route.source} → ${route.destination}
+                            </div>
+                            <div style="font-size: 0.9rem; color: var(--text-secondary);">
+                                Distance: ${route.distance ? route.distance.toFixed(1) : 'N/A'} km • 
+                                Transport: ${route.transportMode || 'N/A'} • 
+                                ID: #${route.routeId}
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: var(--space-sm);">
+                            <button onclick="useRoute('${route.source}', '${route.destination}')" 
+                                    class="btn btn-primary" 
+                                    style="padding: var(--space-xs) var(--space-sm); font-size: 0.8rem;">
+                                <i class="fas fa-replay"></i> Use
+                            </button>
+                            <button onclick="deleteRoute(${route.routeId})" 
+                                    class="btn btn-secondary" 
+                                    style="padding: var(--space-xs) var(--space-sm); font-size: 0.8rem;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function useRoute(source, destination) {
+            document.getElementById('start').value = source;
+            document.getElementById('end').value = destination;
+            document.getElementById('routeForm').dispatchEvent(new Event('submit'));
+        }
+
+        async function deleteRoute(routeId) {
+            if (!confirm('Are you sure you want to delete this route from history?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/routes/${routeId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (response.ok) {
+                    loadSearchHistory(); // Refresh the list
+                } else {
+                    alert('Failed to delete route');
+                }
+            } catch (error) {
+                console.error('Error deleting route:', error);
+                alert('Error deleting route');
+            }
+        }
+
+        // Load search history on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSearchHistory();
+        });
+
+        // Refresh history button
+        document.getElementById('refreshHistory').addEventListener('click', () => {
+            loadSearchHistory();
+        });
+    </script>
 </body>
 </html>

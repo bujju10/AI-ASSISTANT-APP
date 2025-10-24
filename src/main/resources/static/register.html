@@ -2,49 +2,155 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Register</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - Smart Travel Assistant</title>
     <link rel="stylesheet" href="/css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 </head>
 <body>
-<div class="container">
-    <h2>Register</h2>
-    <form id="registerForm">
-        <label>Name:</label><br>
-        <input type="text" id="name" required><br>
-        <label>Email:</label><br>
-        <input type="email" id="email" required><br>
-        <label>Password:</label><br>
-        <input type="password" id="password" required><br><br>
-        <button type="submit">Register</button>
-    </form>
-    <p id="registerMsg"></p>
-    <p>Already have an account? <a href="/login.html">Login here</a></p>
-</div>
-<script src="/js/ui.js"></script>
-<script>
-document.getElementById("registerForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const user = {
-        name: document.getElementById("name").value,
-        email: document.getElementById("email").value,
-        password: document.getElementById("password").value
-    };
-    const res = await fetch("/api/users/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(user)
-    });
-    const data = await res.json().catch(() => null);
-    if (res.ok && data && data.id) {
-        localStorage.setItem('userId', data.id);
-        uiToast('Registered successfully','success');
-        setTimeout(() => window.location = "/routes.html", 900);
-    } else {
-        const msg = await res.text();
-        uiToast(msg,'error');
-        document.getElementById("registerMsg").textContent = msg;
-    }
-});
-</script>
+    <header>
+        <h1>📝 Create Account</h1>
+        <p class="text-center text-secondary">Join the Future of Smart Travel</p>
+    </header>
+
+    <div class="container">
+        <div class="card" style="max-width: 500px; margin: 0 auto;">
+            <h2 style="color: var(--accent-primary); margin-bottom: var(--space-xl); text-align: center;">
+                Start Your Journey
+            </h2>
+            
+            <form id="registerForm">
+                <div class="form-row">
+                    <label for="name">👤 Full Name</label>
+                    <input type="text" id="name" placeholder="Enter your full name" required>
+                </div>
+
+                <div class="form-row">
+                    <label for="email">📧 Email Address</label>
+                    <input type="email" id="email" placeholder="Enter your email address" required>
+                </div>
+
+                <div class="form-row">
+                    <label for="password">🔒 Password</label>
+                    <input type="password" id="password" placeholder="Create a strong password" required>
+                </div>
+
+                <div class="form-row">
+                    <label for="confirmPassword">🔒 Confirm Password</label>
+                    <input type="password" id="confirmPassword" placeholder="Confirm your password" required>
+                </div>
+
+                <div class="form-row">
+                    <label for="phone">📱 Phone Number (Optional)</label>
+                    <input type="tel" id="phone" placeholder="Enter your phone number">
+                </div>
+
+                <div style="text-align: center; margin: var(--space-xl) 0;">
+                    <button type="submit" class="primary" style="padding: var(--space-lg) var(--space-2xl); font-size: 1.1rem; width: 100%;">
+                        <span>🚀</span>
+                        Create Account
+                    </button>
+                </div>
+            </form>
+
+            <div id="registerMsg" style="margin-top: var(--space-lg); text-align: center; font-weight: 600;"></div>
+
+            <div style="text-align: center; margin-top: var(--space-xl); padding-top: var(--space-xl); border-top: 1px solid var(--border-color);">
+                <p style="color: var(--text-secondary); margin-bottom: var(--space-md);">
+                    Already have an account?
+                </p>
+                <a href="/login.html">
+                    <button class="secondary">
+                        <span>🔐</span>
+                        Sign In Instead
+                    </button>
+                </a>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav" style="margin-top: var(--space-xl); justify-content: center;">
+            <a href="/index.html">
+                <button class="ghost">
+                    <span>🏠</span>
+                    Back to Home
+                </button>
+            </a>
+        </div>
+    </div>
+
+    <script src="/js/ui.js"></script>
+    <script>
+        document.getElementById("registerForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span class="loading"></span> Creating account...';
+            submitBtn.disabled = true;
+
+            const password = document.getElementById("password").value;
+            const confirmPassword = document.getElementById("confirmPassword").value;
+
+            // Validate password match
+            if (password !== confirmPassword) {
+                uiToast('Passwords do not match', 'error');
+                document.getElementById("registerMsg").innerHTML = 
+                    '<div style="color: var(--error); padding: var(--space-lg); background: var(--glass-bg); border-radius: var(--radius-md); border: 1px solid var(--error);">' +
+                    '❌ Passwords do not match. Please try again.</div>';
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                return;
+            }
+
+            const user = {
+                name: document.getElementById("name").value,
+                email: document.getElementById("email").value,
+                password: password,
+                phone: document.getElementById("phone").value
+            };
+
+            try {
+                const res = await fetch("/api/users/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(user)
+                });
+
+                const data = await res.json().catch(() => null);
+                
+                if (res.ok && data && data.id) {
+                    localStorage.setItem('userId', data.id);
+                    localStorage.setItem('userEmail', data.email);
+                    localStorage.setItem('userName', data.name);
+                    
+                    uiToast('Account created successfully! Welcome aboard!', 'success');
+                    document.getElementById("registerMsg").innerHTML = 
+                        '<div style="color: var(--success); padding: var(--space-lg); background: var(--glass-bg); border-radius: var(--radius-md); border: 1px solid var(--success);">' +
+                        '✅ Account created successfully! Redirecting to your dashboard...</div>';
+                    
+                    setTimeout(() => window.location = "/routes.html", 1500);
+                } else {
+                    const msg = await res.text();
+                    uiToast(msg, 'error');
+                    document.getElementById("registerMsg").innerHTML = 
+                        '<div style="color: var(--error); padding: var(--space-lg); background: var(--glass-bg); border-radius: var(--radius-md); border: 1px solid var(--error);">' +
+                        '❌ ' + msg + '</div>';
+                }
+            } catch (error) {
+                uiToast('Connection error. Please try again.', 'error');
+                document.getElementById("registerMsg").innerHTML = 
+                    '<div style="color: var(--error); padding: var(--space-lg); background: var(--glass-bg); border-radius: var(--radius-md); border: 1px solid var(--error);">' +
+                    '❌ Connection error. Please check your internet connection and try again.</div>';
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Auto-focus on name field
+        document.getElementById("name").focus();
+    </script>
 </body>
 </html>

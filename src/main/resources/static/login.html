@@ -2,47 +2,124 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - Smart Travel Assistant</title>
     <link rel="stylesheet" href="/css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 </head>
 <body>
-<div class="container">
-    <h2>Login</h2>
-    <form id="loginForm">
-        <label>Email:</label><br>
-        <input type="email" id="email" required><br>
-        <label>Password:</label><br>
-        <input type="password" id="password" required><br><br>
-        <button type="submit">Login</button>
-    </form>
-    <p id="loginMsg"></p>
-    <p>Don't have an account? <a href="/register.html">Register here</a></p>
-</div>
-<script src="/js/ui.js"></script>
-<script>
-document.getElementById("loginForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const user = {
-        email: document.getElementById("email").value,
-        password: document.getElementById("password").value
-    };
-    const res = await fetch("/api/users/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(user)
-    });
-    if (res.ok) {
-        const user = await res.json();
-        if (user && user.id) localStorage.setItem('userId', user.id);
-        uiToast('Login successful','success');
-        document.getElementById("loginMsg").textContent = "Login successful! Redirecting...";
-        setTimeout(() => window.location = "/routes.html", 800);
-    } else {
-        const msg = await res.text();
-        uiToast(msg,'error');
-        document.getElementById("loginMsg").textContent = msg;
-    }
-});
-</script>
+    <header>
+        <h1>🔐 Sign In</h1>
+        <p class="text-center text-secondary">Access Your Smart Travel Account</p>
+    </header>
+
+    <div class="container">
+        <div class="card" style="max-width: 500px; margin: 0 auto;">
+            <h2 style="color: var(--accent-primary); margin-bottom: var(--space-xl); text-align: center;">
+                Welcome Back
+            </h2>
+            
+            <form id="loginForm">
+                <div class="form-row">
+                    <label for="email">📧 Email Address</label>
+                    <input type="email" id="email" placeholder="Enter your email address" required>
+                </div>
+
+                <div class="form-row">
+                    <label for="password">🔒 Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" required>
+                </div>
+
+                <div style="text-align: center; margin: var(--space-xl) 0;">
+                    <button type="submit" class="primary" style="padding: var(--space-lg) var(--space-2xl); font-size: 1.1rem; width: 100%;">
+                        <span>🚀</span>
+                        Sign In
+                    </button>
+                </div>
+            </form>
+
+            <div id="loginMsg" style="margin-top: var(--space-lg); text-align: center; font-weight: 600;"></div>
+
+            <div style="text-align: center; margin-top: var(--space-xl); padding-top: var(--space-xl); border-top: 1px solid var(--border-color);">
+                <p style="color: var(--text-secondary); margin-bottom: var(--space-md);">
+                    Don't have an account?
+                </p>
+                <a href="/register.html">
+                    <button class="secondary">
+                        <span>📝</span>
+                        Create New Account
+                    </button>
+                </a>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav" style="margin-top: var(--space-xl); justify-content: center;">
+            <a href="/index.html">
+                <button class="ghost">
+                    <span>🏠</span>
+                    Back to Home
+                </button>
+            </a>
+        </div>
+    </div>
+
+    <script src="/js/ui.js"></script>
+    <script>
+        document.getElementById("loginForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span class="loading"></span> Signing in...';
+            submitBtn.disabled = true;
+
+            const user = {
+                email: document.getElementById("email").value,
+                password: document.getElementById("password").value
+            };
+
+            try {
+                const res = await fetch("/api/users/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(user)
+                });
+
+                if (res.ok) {
+                    const userData = await res.json();
+                    if (userData && userData.id) {
+                        localStorage.setItem('userId', userData.id);
+                        localStorage.setItem('userEmail', userData.email);
+                    }
+                    
+                    uiToast('Welcome back! Sign in successful', 'success');
+                    document.getElementById("loginMsg").innerHTML = 
+                        '<div style="color: var(--success); padding: var(--space-lg); background: var(--glass-bg); border-radius: var(--radius-md); border: 1px solid var(--success);">' +
+                        '✅ Sign in successful! Redirecting to your dashboard...</div>';
+                    
+                    setTimeout(() => window.location = "/routes.html", 1500);
+                } else {
+                    const msg = await res.text();
+                    uiToast(msg, 'error');
+                    document.getElementById("loginMsg").innerHTML = 
+                        '<div style="color: var(--error); padding: var(--space-lg); background: var(--glass-bg); border-radius: var(--radius-md); border: 1px solid var(--error);">' +
+                        '❌ ' + msg + '</div>';
+                }
+            } catch (error) {
+                uiToast('Connection error. Please try again.', 'error');
+                document.getElementById("loginMsg").innerHTML = 
+                    '<div style="color: var(--error); padding: var(--space-lg); background: var(--glass-bg); border-radius: var(--radius-md); border: 1px solid var(--error);">' +
+                    '❌ Connection error. Please check your internet connection and try again.</div>';
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Auto-focus on email field
+        document.getElementById("email").focus();
+    </script>
 </body>
 </html>

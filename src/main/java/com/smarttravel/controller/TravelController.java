@@ -3,7 +3,6 @@ package com.smarttravel.controller;
 import com.smarttravel.model.Route;
 import com.smarttravel.service.RouteService;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,11 +17,9 @@ public class TravelController {
     }
 
     @GetMapping("/")
-    public String home(Model model) {
-        List<Route> routes = routeService.getAllRoutes();
-        model.addAttribute("routes", routes);
-        model.addAttribute("newRoute", new Route());
-        return "index";
+    public String home() {
+        // Return static HTML file instead of Thymeleaf template
+        return "forward:/index.html";
     }
 
     @PostMapping("/addRoute")

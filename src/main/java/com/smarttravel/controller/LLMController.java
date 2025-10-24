@@ -16,16 +16,21 @@ import java.util.Map;
 public class LLMController {
     // Change this to your LM Studio LLM endpoint
     private static final String LLM_API_URL = "http://127.0.0.1:1234/v1/chat/completions";
-    // Default system prompt that guides the assistant behavior. Can be overridden by sending
-    // a `system` field in the request payload.
+    // Enhanced system prompt for smarter travel assistance with internet data
     private static final String DEFAULT_SYSTEM_PROMPT =
-        "You are a helpful travel planning assistant. "
-        + "When given route coordinates and context, you should: "
-        + "1) Propose the top 3 route options with concise pros/cons for each; "
-        + "2) Recommend the best mode of transportation (considering time, cost, safety, and CO2); "
-        + "3) Return a short human-readable recommendation and (optionally) a JSON block under 'structured' "
-        + "with keys: best_route_index, recommended_mode, estimated_time_minutes, estimated_cost, and an explanation. "
-        + "Keep answers concise unless the user asks for more details.";
+        "You are an advanced AI travel planning assistant with access to real-time data. "
+        + "When analyzing travel routes, you should: "
+        + "1) Analyze the provided route coordinates and real-time context data; "
+        + "2) Consider current weather conditions, traffic patterns, and local events; "
+        + "3) Recommend the best transportation modes with detailed pros/cons; "
+        + "4) Provide estimated travel times, costs, and environmental impact; "
+        + "5) Suggest alternative routes if available; "
+        + "6) Include local tips, safety considerations, and accessibility information; "
+        + "7) Mention any current roadblocks, construction, or events that might affect travel; "
+        + "8) Consider time of day, day of week, and seasonal factors; "
+        + "9) Provide practical advice for the specific locations mentioned; "
+        + "10) Format your response clearly with sections for different aspects of the journey. "
+        + "Be comprehensive but concise, and always prioritize safety and efficiency.";
     // store current system prompt in-memory
     private static volatile String CURRENT_SYSTEM_PROMPT = DEFAULT_SYSTEM_PROMPT;
 
@@ -86,7 +91,21 @@ public class LLMController {
 
     @PostMapping("/chat")
     public ResponseEntity<?> chatWithLLM(@RequestBody Map<String, Object> payload) {
-        // Accepts { "prompt": "..." }
+        // Enhanced chat with optional location context
+        String prompt = (String) payload.getOrDefault("prompt", "");
+        String origin = (String) payload.getOrDefault("origin", "");
+        String destination = (String) payload.getOrDefault("destination", "");
+        
+        // If origin and destination are provided, use enhanced search
+        if ((origin != null && !origin.isBlank()) || (destination != null && !destination.isBlank())) {
+            Map<String, Object> enhancedPayload = new HashMap<>();
+            enhancedPayload.put("prompt", prompt);
+            enhancedPayload.put("origin", origin);
+            enhancedPayload.put("destination", destination);
+            return searchFreeAndAsk(enhancedPayload);
+        }
+        
+        // Otherwise use regular chat
         return getRouteSuggestion(payload);
     }
 
@@ -108,27 +127,71 @@ public class LLMController {
         java.util.List<Map<String,String>> searchResults = new java.util.ArrayList<>();
         try {
             if (origin != null && !origin.isBlank()) {
-                Map<String,String> r = searchFreeService.enrichPlace(origin);
+                Map<String,String> r = searchFreeService.getComprehensivePlaceInfo(origin);
                 if (r != null) searchResults.add(r);
             }
             if (destination != null && !destination.isBlank()) {
-                Map<String,String> r = searchFreeService.enrichPlace(destination);
+                Map<String,String> r = searchFreeService.getComprehensivePlaceInfo(destination);
                 if (r != null) searchResults.add(r);
             }
         } catch (Exception e) {
             System.err.println("search-free service failed: " + e.getMessage());
         }
 
-        // Build augmented prompt
+        // Build enhanced augmented prompt with comprehensive real-time data
         StringBuilder aug = new StringBuilder();
         if (!searchResults.isEmpty()) {
-            aug.append("Context from local free sources:\n");
+            aug.append("🌍 COMPREHENSIVE TRAVEL ANALYSIS CONTEXT:\n");
+            aug.append("Current time: ").append(java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))).append("\n\n");
+            
             for (Map<String,String> s : searchResults) {
-                aug.append("- ").append(s.getOrDefault("display_name", s.getOrDefault("query","?"))).append(": ")
-                   .append(s.getOrDefault("wikidata_description", s.getOrDefault("description","(no description)")))
-                   .append(" (lat:").append(s.getOrDefault("lat","?")).append(", lon:").append(s.getOrDefault("lon","?")).append(")\n");
+                String placeName = s.getOrDefault("display_name", s.getOrDefault("query","Unknown Location"));
+                aug.append("📍 ").append(placeName).append(":\n");
+                
+                // Basic location info
+                if (s.containsKey("lat") && s.containsKey("lon")) {
+                    aug.append("   Coordinates: ").append(s.get("lat")).append(", ").append(s.get("lon")).append("\n");
+                }
+                
+                // Wikidata description if available
+                if (s.containsKey("wikidata_description")) {
+                    aug.append("   Description: ").append(s.get("wikidata_description")).append("\n");
+                }
+                
+                // Travel tips
+                if (s.containsKey("travel_tip")) {
+                    aug.append("   💡 Travel Tip: ").append(s.get("travel_tip")).append("\n");
+                }
+                
+                // Enhanced real-time data
+                if (s.containsKey("day_of_week")) {
+                    aug.append("   📅 Day: ").append(s.get("day_of_week")).append(" (").append(s.get("time_of_day")).append(")\n");
+                }
+                if (s.containsKey("season")) {
+                    aug.append("   🌿 Season: ").append(s.get("season")).append("\n");
+                }
+                if (s.containsKey("traffic_pattern")) {
+                    aug.append("   🚦 Traffic: ").append(s.get("traffic_pattern")).append("\n");
+                }
+                if (s.containsKey("weather_considerations")) {
+                    aug.append("   🌤️ Weather: ").append(s.get("weather_considerations")).append("\n");
+                }
+                if (s.containsKey("local_events")) {
+                    aug.append("   📅 Events: ").append(s.get("local_events")).append("\n");
+                }
+                if (s.containsKey("accessibility")) {
+                    aug.append("   ♿ Accessibility: ").append(s.get("accessibility")).append("\n");
+                }
+                if (s.containsKey("parking_info")) {
+                    aug.append("   🅿️ Parking: ").append(s.get("parking_info")).append("\n");
+                }
+                if (s.containsKey("public_transport")) {
+                    aug.append("   🚌 Public Transport: ").append(s.get("public_transport")).append("\n");
+                }
+                
+                aug.append("\n");
             }
-            aug.append("\n");
+            aug.append("📋 DETAILED ANALYSIS REQUEST:\n");
         }
         aug.append(prompt);
 

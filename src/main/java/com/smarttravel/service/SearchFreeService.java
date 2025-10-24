@@ -3,14 +3,21 @@ package com.smarttravel.service;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.http.HttpHeaders;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Service
 public class SearchFreeService {
+
+    @Autowired
+    private RealTimeDataService realTimeDataService;
 
     // Use Nominatim to get place info (free) and Wikidata for structured facts
     public Map<String,String> enrichPlace(String place) {
@@ -61,9 +68,61 @@ public class SearchFreeService {
                     }
                 }
             }
+
+            // Add real-time data if we have coordinates
+            if (out.containsKey("lat") && out.containsKey("lon")) {
+                addRealTimeData(out, rt);
+            }
+
         } catch (Exception ex) {
             System.err.println("enrich error: " + ex.getMessage());
         }
         return out;
+    }
+
+    private void addRealTimeData(Map<String,String> placeData, RestTemplate rt) {
+        try {
+            String lat = placeData.get("lat");
+            String lon = placeData.get("lon");
+            String placeName = placeData.get("display_name");
+            
+            // Get enhanced real-time data
+            Map<String, String> realTimeData = realTimeDataService.getRealTimeData(lat, lon, placeName);
+            placeData.putAll(realTimeData);
+            
+        } catch (Exception e) {
+            System.err.println("Real-time data error: " + e.getMessage());
+            // Add fallback data
+            placeData.put("current_time", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+            placeData.put("traffic_note", "Real-time traffic data available with API integration");
+            placeData.put("weather_note", "Weather data available with API key");
+        }
+    }
+
+    // Enhanced method to get comprehensive place information
+    public Map<String,String> getComprehensivePlaceInfo(String place) {
+        Map<String,String> info = enrichPlace(place);
+        
+        // Add additional context
+        info.put("query", place);
+        info.put("enriched_at", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        
+        // Add travel tips based on place type
+        String displayName = info.get("display_name");
+        if (displayName != null) {
+            if (displayName.toLowerCase().contains("airport")) {
+                info.put("travel_tip", "Airport detected - consider flight delays, security wait times, and ground transportation options");
+            } else if (displayName.toLowerCase().contains("station")) {
+                info.put("travel_tip", "Train station detected - check train schedules and platform information");
+            } else if (displayName.toLowerCase().contains("hospital")) {
+                info.put("travel_tip", "Medical facility detected - consider emergency access routes and parking availability");
+            } else if (displayName.toLowerCase().contains("university") || displayName.toLowerCase().contains("college")) {
+                info.put("travel_tip", "Educational institution detected - consider student traffic patterns and parking restrictions");
+            } else {
+                info.put("travel_tip", "General location - check local traffic patterns and parking availability");
+            }
+        }
+        
+        return info;
     }
 }

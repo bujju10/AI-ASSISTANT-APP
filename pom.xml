@@ -45,11 +45,7 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Thymeleaf Template Engine (optional but recommended for frontend integration) -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-thymeleaf</artifactId>
-        </dependency>
+        <!-- Thymeleaf removed - using static HTML files instead -->
 
         <!-- Validation (for forms and booking inputs) -->
         <dependency>

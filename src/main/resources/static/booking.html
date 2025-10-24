@@ -2,54 +2,244 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Book Your Ride</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Your Ride - Smart Travel Assistant</title>
     <link rel="stylesheet" href="/css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 </head>
 <body>
-<header>
-    <h1>Book Your Ride</h1>
-</header>
+    <header>
+        <h1>🚗 Book Your Ride</h1>
+        <p class="text-center text-secondary">AI-Optimized Travel Booking</p>
+    </header>
 
-<div class="container">
-    <form id="bookingForm">
-        <label for="userName">Name:</label><br>
-        <input type="text" id="userName" name="userName" required><br><br>
+    <div class="container">
+        <div class="card">
+            <h2 style="color: var(--accent-primary); margin-bottom: var(--space-xl); text-align: center;">
+                Create Your Travel Request
+            </h2>
+            
+            <form id="bookingForm">
+                <div class="form-row">
+                    <label for="userName">👤 Full Name</label>
+                    <input type="text" id="userName" name="userName" placeholder="Enter your full name" required>
+                </div>
 
-        <label for="pickup">Pickup Location:</label><br>
-        <input type="text" id="pickup" name="pickup" required><br><br>
+                <div class="form-row">
+                    <label for="pickup">📍 Pickup Location</label>
+                    <input type="text" id="pickup" name="pickup" placeholder="Where should we pick you up?" required>
+                </div>
 
-        <label for="destination">Destination:</label><br>
-        <input type="text" id="destination" name="destination" required><br><br>
+                <div class="form-row">
+                    <label for="destination">🎯 Destination</label>
+                    <input type="text" id="destination" name="destination" placeholder="Where are you going?" required>
+                </div>
 
-        <label for="travelDate">Date:</label><br>
-        <input type="date" id="travelDate" name="travelDate" required><br><br>
+                <div class="form-row">
+                    <label for="travelDate">📅 Travel Date</label>
+                    <input type="date" id="travelDate" name="travelDate" required>
+                </div>
 
-        <button type="submit">Submit Booking</button>
-    </form>
+                <div class="form-row">
+                    <label for="travelTime">⏰ Preferred Time</label>
+                    <input type="time" id="travelTime" name="travelTime" required>
+                </div>
 
-    <p id="responseMessage" style="margin-top:20px; color:green;"></p>
-</div>
+                <div class="form-row">
+                    <label for="passengers">👥 Number of Passengers</label>
+                    <select id="passengers" name="passengers" required>
+                        <option value="">Select passengers</option>
+                        <option value="1">1 Passenger</option>
+                        <option value="2">2 Passengers</option>
+                        <option value="3">3 Passengers</option>
+                        <option value="4">4 Passengers</option>
+                        <option value="5+">5+ Passengers</option>
+                    </select>
+                </div>
 
-<script>
-document.getElementById("bookingForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
+                <div class="form-row">
+                    <label for="vehicleType">🚙 Vehicle Preference</label>
+                    <select id="vehicleType" name="vehicleType" required>
+                        <option value="">Select vehicle type</option>
+                        <option value="cab">Cab/Taxi</option>
+                        <option value="auto">Auto Rickshaw</option>
+                        <option value="bus">Bus</option>
+                        <option value="metro">Metro</option>
+                        <option value="train">Train</option>
+                        <option value="flight">Flight</option>
+                    </select>
+                </div>
 
-    const booking = {
-        userName: document.getElementById("userName").value,
-        pickup: document.getElementById("pickup").value,
-        destination: document.getElementById("destination").value,
-        travelDate: document.getElementById("travelDate").value
-    };
+                <!-- Fare Calculation -->
+                <div class="form-row" id="fareCalculation" style="display: none;">
+                    <label>💰 Estimated Fare</label>
+                    <div class="fare-display">
+                        <span id="fareAmount">₹0.00</span>
+                        <small id="fareDetails">Calculating...</small>
+                    </div>
+                </div>
 
-    const response = await fetch("/api/bookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(booking)
-    });
+                <!-- Wallet Balance -->
+                <div class="form-row" id="walletBalance" style="display: none;">
+                    <label>💳 Wallet Balance</label>
+                    <div class="wallet-display">
+                        <span id="balanceAmount">₹0.00</span>
+                        <a href="/wallet.html" class="wallet-link">Manage Wallet</a>
+                    </div>
+                </div>
 
-    const result = await response.text();
-    document.getElementById("responseMessage").textContent = result;
-});
-</script>
+                <div class="form-row">
+                    <label for="specialRequests">💬 Special Requests</label>
+                    <textarea id="specialRequests" name="specialRequests" placeholder="Any special requirements or notes..." rows="3"></textarea>
+                </div>
+
+                <div style="text-align: center; margin-top: var(--space-xl);">
+                    <button type="submit" class="primary" style="padding: var(--space-lg) var(--space-2xl); font-size: 1.1rem;">
+                        <span>🚀</span>
+                        Submit Booking Request
+                    </button>
+                </div>
+            </form>
+
+            <div id="responseMessage" style="margin-top: var(--space-xl); text-align: center; font-weight: 600;"></div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav" style="margin-top: var(--space-xl);">
+            <a href="/index.html">
+                <button class="ghost">
+                    <span>🏠</span>
+                    Home
+                </button>
+            </a>
+            <a href="/routes.html">
+                <button class="secondary">
+                    <span>🗺️</span>
+                    Explore Routes
+                </button>
+            </a>
+        </div>
+    </div>
+
+    <script src="/js/ui.js"></script>
+    <script>
+        const currentUserId = 1; // Demo user ID
+
+        // Load wallet balance on page load
+        async function loadWalletBalance() {
+            try {
+                const response = await fetch(`/api/wallet/balance/${currentUserId}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('balanceAmount').textContent = `₹${data.balance.toFixed(2)}`;
+                    document.getElementById('walletBalance').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error loading wallet balance:', error);
+            }
+        }
+
+        // Calculate fare when route and transport type are selected
+        async function calculateFare() {
+            const pickup = document.getElementById("pickup").value;
+            const destination = document.getElementById("destination").value;
+            const vehicleType = document.getElementById("vehicleType").value;
+
+            if (pickup && destination && vehicleType) {
+                try {
+                    const response = await fetch('/api/wallet/calculate-fare', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            start: pickup,
+                            end: destination,
+                            transportType: vehicleType
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        document.getElementById('fareAmount').textContent = `₹${data.fare.toFixed(2)}`;
+                        document.getElementById('fareDetails').textContent = 
+                            `${data.distance} km via ${data.transportType} • ₹${data.fare.toFixed(2)}`;
+                        document.getElementById('fareCalculation').style.display = 'block';
+                    }
+                } catch (error) {
+                    console.error('Error calculating fare:', error);
+                }
+            }
+        }
+
+        // Event listeners for fare calculation
+        document.getElementById("pickup").addEventListener("input", calculateFare);
+        document.getElementById("destination").addEventListener("input", calculateFare);
+        document.getElementById("vehicleType").addEventListener("change", calculateFare);
+
+        // Load wallet balance on page load
+        loadWalletBalance();
+
+        document.getElementById("bookingForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span class="loading"></span> Processing...';
+            submitBtn.disabled = true;
+
+            const booking = {
+                userId: currentUserId,
+                passengerName: document.getElementById("userName").value,
+                fromLocation: document.getElementById("pickup").value,
+                toLocation: document.getElementById("destination").value,
+                transportType: document.getElementById("vehicleType").value,
+                travelDate: document.getElementById("travelDate").value,
+                travelTime: document.getElementById("travelTime").value
+            };
+
+            try {
+                // Use wallet booking endpoint
+                const response = await fetch("/api/wallet/book-ride", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(booking)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById("responseMessage").innerHTML = 
+                        '<div style="color: var(--success); padding: var(--space-lg); background: var(--glass-bg); border-radius: var(--radius-md); border: 1px solid var(--success);">' +
+                        `✅ ${result.message}<br>Booking ID: ${result.bookingId}<br>Fare: ₹${result.fare}<br>New Balance: ₹${result.newBalance}` +
+                        '</div>';
+                    document.getElementById("bookingForm").reset();
+                    document.getElementById("fareCalculation").style.display = "none";
+                    loadWalletBalance(); // Refresh wallet balance
+                } else {
+                    document.getElementById("responseMessage").innerHTML = 
+                        '<div style="color: var(--error); padding: var(--space-lg); background: var(--glass-bg); border-radius: var(--radius-md); border: 1px solid var(--error);">' +
+                        `❌ ${result.error}` +
+                        '</div>';
+                }
+            } catch (error) {
+                document.getElementById("responseMessage").innerHTML = 
+                    '<div style="color: var(--error); padding: var(--space-lg); background: var(--glass-bg); border-radius: var(--radius-md); border: 1px solid var(--error);">' +
+                    '❌ Error: ' + error.message + '</div>';
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Set minimum date to today
+        document.getElementById("travelDate").min = new Date().toISOString().split('T')[0];
+        
+        // Set default time to current time + 1 hour
+        const now = new Date();
+        now.setHours(now.getHours() + 1);
+        document.getElementById("travelTime").value = now.toTimeString().slice(0, 5);
+    </script>
 </body>
 </html>
