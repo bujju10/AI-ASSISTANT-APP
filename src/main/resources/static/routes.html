@@ -184,9 +184,12 @@
             L.marker([endCoord[1], endCoord[0]]).addTo(map)
                 .bindPopup(`<strong>Destination:</strong> ${end}`);
 
-            // Auto-save route to database
+            // Extract actual distance from route data (in km)
+            const actualDistance = routeData.features[0].properties.summary.distance / 1000.0;
+
+            // Auto-save route to database with actual distance
             try {
-                await saveRouteToHistory(start, end, 'cab'); // Default transport type
+                await saveRouteToHistory(start, end, 'cab', actualDistance);
             } catch (error) {
                 console.warn('Failed to save route to history:', error);
             }
@@ -356,7 +359,7 @@
         }
 
         // Search History Functions
-        async function saveRouteToHistory(source, destination, transportType) {
+        async function saveRouteToHistory(source, destination, transportType, distance) {
             try {
                 const response = await fetch('/api/routes/search', {
                     method: 'POST',
@@ -367,7 +370,8 @@
                     body: JSON.stringify({
                         source: source,
                         destination: destination,
-                        transportType: transportType
+                        transportType: transportType,
+                        distance: distance
                     })
                 });
 

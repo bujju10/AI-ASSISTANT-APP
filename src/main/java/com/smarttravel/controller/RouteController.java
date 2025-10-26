@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -38,8 +37,19 @@ public class RouteController {
             String destination = request.get("destination").toString();
             String transportType = request.getOrDefault("transportType", "cab").toString();
             
-            // Calculate distance (simplified - in real app, use map service)
-            Double distance = calculateDistance(source, destination);
+            // Use actual distance from request if provided, otherwise calculate
+            Double distance;
+            if (request.containsKey("distance") && request.get("distance") != null) {
+                Object distObj = request.get("distance");
+                if (distObj instanceof Number) {
+                    distance = ((Number) distObj).doubleValue();
+                } else {
+                    distance = Double.parseDouble(distObj.toString());
+                }
+            } else {
+                // Fallback: calculate distance (simplified - in real app, use map service)
+                distance = calculateDistance(source, destination);
+            }
             
             // Save the searched route
             Route savedRoute = routeService.saveSearchedRoute(source, destination, distance, transportType);
